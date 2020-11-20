@@ -1,0 +1,16 @@
+name: extended_masked_text
+description: Allow custom masks for flutter TextFields
+version: 1.0.0
+homepage: leandronovak.github.io
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
