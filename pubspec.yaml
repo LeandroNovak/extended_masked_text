@@ -1,5 +1,5 @@
 name: extended_masked_text
-description: Allow custom masks for flutter TextFields
+description: A small set of custom TextEditingControllers that allows masked text inputs for flutter apps
 version: 1.0.0
 homepage: leandronovak.github.io
 

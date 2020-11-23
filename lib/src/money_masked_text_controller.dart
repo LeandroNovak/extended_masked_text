@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+/// A [TextEditingController] extended to apply masks to currency values
 class MoneyMaskedTextController extends TextEditingController {
   MoneyMaskedTextController({
     double initialValue,
@@ -8,7 +9,11 @@ class MoneyMaskedTextController extends TextEditingController {
     this.rightSymbol = '',
     this.leftSymbol = '',
     this.precision = 2,
-  }) {
+  })  : assert(decimalSeparator != null),
+        assert(thousandSeparator != null),
+        assert(rightSymbol != null),
+        assert(leftSymbol != null),
+        assert(precision != null) {
     _validateConfig();
 
     addListener(() {
@@ -19,13 +24,34 @@ class MoneyMaskedTextController extends TextEditingController {
     updateValue(initialValue);
   }
 
+  /// Character used as decimal separator
+  ///
+  /// Defaults to ',' and must not be null.
   final String decimalSeparator;
+
+  /// Character used as thousand separator
+  ///
+  /// Defaults to '.' and must not be null.
   final String thousandSeparator;
+
+  /// Character used as right symbol
+  ///
+  /// Defaults to empty string. Must not be null.
   final String rightSymbol;
+
+  /// Character used as left symbol
+  ///
+  /// Defaults to empty string. Must not be null.
   final String leftSymbol;
+
+  /// Numeric precision to fraction digits
+  ///
+  /// Defaults to 2
   final int precision;
 
   double _lastValue;
+
+  /// The numeric value of the text
   double get numberValue {
     final parts = _getOnlyNumbers(text).split('').toList(growable: true);
 
@@ -37,6 +63,7 @@ class MoneyMaskedTextController extends TextEditingController {
     }
   }
 
+  /// Updates the value and applies the mask
   void updateValue(double value) {
     if (value == null) {
       return;
@@ -70,10 +97,9 @@ class MoneyMaskedTextController extends TextEditingController {
     }
   }
 
+  /// Ensures [rightSymbol] does not contains numbers
   void _validateConfig() {
-    final rightSymbolHasNumbers = _getOnlyNumbers(rightSymbol).isNotEmpty;
-
-    if (rightSymbolHasNumbers) {
+    if (_getOnlyNumbers(rightSymbol).isNotEmpty) {
       throw ArgumentError('rightSymbol must not have numbers.');
     }
   }
