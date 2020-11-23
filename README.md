@@ -2,6 +2,8 @@
 
 A small set of custom TextEditingControllers that allows masked text inputs for flutter apps
 
+This package is based on the source code of [flutter_masked_text](https://pub.dev/packages/flutter_masked_text) and is and attempt to fix some bugs and continue the development of the original one.
+
 ## Usage
 
 Import the library
