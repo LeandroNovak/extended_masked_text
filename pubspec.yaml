@@ -1,7 +1,7 @@
 name: extended_masked_text
 description: A small set of custom TextEditingControllers that allows masked text inputs for flutter apps
-version: 1.0.0
-homepage: https://leandronovak.github.io
+version: 1.0.1
+homepage: https://github.com/LeandroNovak/extended_masked_text
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
