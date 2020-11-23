@@ -1,7 +1,4 @@
 library extended_masked_text;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'package:extended_masked_text/masked_text_controller.dart';
+export 'package:extended_masked_text/money_masked_text_controller.dart';
