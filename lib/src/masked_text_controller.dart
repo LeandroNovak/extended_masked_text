@@ -39,7 +39,7 @@ class MaskedTextController extends TextEditingController {
         '*': RegExp(r'.*')
       };
 
-  /// Corresponding to [TextEditingController.text] with cursor position update
+  /// Corresponding to [TextEditingController.text]
   @override
   set text(String newText) {
     if (super.text != newText) {
