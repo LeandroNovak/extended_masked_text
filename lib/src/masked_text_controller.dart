@@ -3,10 +3,11 @@ import 'package:flutter/widgets.dart';
 /// A [TextEditingController] extended to provide custom masks to flutter
 class MaskedTextController extends TextEditingController {
   MaskedTextController({
+    @required this.mask,
     String text,
-    this.mask,
     Map<String, RegExp> translator,
-  }) : super(text: text) {
+  })  : assert(mask != null),
+        super(text: text) {
     this.translator = translator ?? MaskedTextController.getDefaultTranslator();
 
     addListener(() {
@@ -43,11 +44,11 @@ class MaskedTextController extends TextEditingController {
   set text(String newText) {
     if (super.text != newText) {
       super.text = newText;
-      moveCursorToEnd();
     }
   }
 
-  /// Replaces [mask] with a [newMask] and moves cursor to the end if desired
+  /// Replaces [mask] with a [newMask] and moves cursor to the end if
+  /// [shouldMoveCursorToEnd] is true
   void updateMask(String newMask, {bool shouldMoveCursorToEnd = true}) {
     mask = newMask;
     updateText(text);
@@ -59,15 +60,20 @@ class MaskedTextController extends TextEditingController {
 
   /// Updates the current [text] with a new one applying the [mask]
   void updateText(String newText) {
+    assert(newText != null, 'Text must not be null');
     text = (newText != null) ? _applyMask(mask, newText) : '';
     _lastUpdatedText = text;
+    moveCursorToEnd();
   }
 
   /// Moves cursor to the end of the text
   void moveCursorToEnd() {
-    selection = TextSelection.fromPosition(
-      TextPosition(offset: (_lastUpdatedText ?? '').length),
-    );
+    // only moves the cursor if text is not selected
+    if (selection.baseOffset == selection.extentOffset) {
+      selection = TextSelection.fromPosition(
+        TextPosition(offset: (_lastUpdatedText ?? '').length),
+      );
+    }
   }
 
   String _applyMask(String mask, String value) {

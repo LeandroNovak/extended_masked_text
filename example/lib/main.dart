@@ -1,6 +1,6 @@
-import 'package:extended_masked_text/extended_masked_text.dart';
+import 'package:example/pages/masked_text_sample.dart';
+import 'package:example/pages/money_masked_text_sample.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,35 +28,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  MoneyMaskedTextController _moneyMaskedTextController;
-
-  @override
-  void initState() {
-    super.initState();
-    _moneyMaskedTextController ??= MoneyMaskedTextController(
-      leftSymbol: 'R\$ ',
-    );
-  }
-
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8),
+        body: Center(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              TextField(
-                controller: _moneyMaskedTextController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp('[0-9]')),
-                ],
-                onChanged: (_) {
-                  print(_moneyMaskedTextController.value);
-                },
+              RaisedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => MaskedTextSample(),
+                  ),
+                ),
+                child: const Text('Masked Controller'),
               ),
+              RaisedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => MoneyMaskedTextSample(),
+                  ),
+                ),
+                child: const Text('Money Masked Controller'),
+              )
             ],
           ),
         ),
