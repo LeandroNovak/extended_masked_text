@@ -55,12 +55,12 @@ class MoneyMaskedTextController extends TextEditingController {
   double get numberValue {
     final parts = _getOnlyNumbers(text).split('').toList(growable: true);
 
-    if (parts.length > precision) {
-      parts.insert(parts.length - precision, '.');
-      return double.parse(parts.join());
-    } else {
+    if (parts.isEmpty) {
       return 0;
     }
+
+    parts.insert(parts.length - precision, '.');
+    return double.parse(parts.join());
   }
 
   /// Updates the value and applies the mask
