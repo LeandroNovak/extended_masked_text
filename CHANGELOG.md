@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Fix bug where money value jumps to 0 when erasing text
+
 ## 1.0.1
 
 * Add link to source project to README

@@ -107,7 +107,6 @@ class MaskedTextController extends TextEditingController {
       // not a masked value, fixed char on mask
       result.write(maskChar);
       maskCharIndex += 1;
-      continue;
     }
 
     return result.toString();
