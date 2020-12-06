@@ -2,8 +2,11 @@ import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Sample of the MoneyMaskedTextController using brazilian currency
 class MoneyMaskedTextSample extends StatelessWidget {
-  final _moneyMaskedTextController = MoneyMaskedTextController();
+  final _moneyMaskedTextController = MoneyMaskedTextController(
+    leftSymbol: 'R\$ ',
+  );
 
   @override
   Widget build(BuildContext context) => Scaffold(

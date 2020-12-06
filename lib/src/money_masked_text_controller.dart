@@ -96,15 +96,7 @@ class MoneyMaskedTextController extends TextEditingController {
       _lastValue = value;
     }
 
-    var masked = _applyMask(valueToUse);
-
-    if (rightSymbol.isNotEmpty) {
-      masked += rightSymbol;
-    }
-
-    if (leftSymbol.isNotEmpty) {
-      masked = leftSymbol + masked;
-    }
+    final masked = _applyMask(valueToUse);
 
     _updateText(masked);
   }
@@ -152,6 +144,16 @@ class MoneyMaskedTextController extends TextEditingController {
       }
     }
 
-    return textRepresentation.reversed.join('');
+    var masked = textRepresentation.reversed.join('');
+
+    if (rightSymbol.isNotEmpty) {
+      masked += rightSymbol;
+    }
+
+    if (leftSymbol.isNotEmpty) {
+      masked = leftSymbol + masked;
+    }
+
+    return masked;
   }
 }

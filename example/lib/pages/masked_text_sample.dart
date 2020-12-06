@@ -2,8 +2,10 @@ import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Sample of the MoneyMaskedTextController
 class MaskedTextSample extends StatelessWidget {
   final _maskedTextController = MaskedTextController(
+    // CPF mask
     mask: '000.000.000-00',
   );
 
@@ -24,7 +26,6 @@ class MaskedTextSample extends StatelessWidget {
                 ],
                 onChanged: (_) {
                   print(_maskedTextController.value);
-                  print(_maskedTextController.value.selection);
                 },
               ),
             ],
