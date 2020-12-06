@@ -15,19 +15,22 @@ class MoneyMaskedTextController extends TextEditingController {
         assert(leftSymbol != null),
         assert(precision != null) {
     _validateConfig();
+    _shouldApplyTheMask = true;
 
     addListener(() {
-      var parts = _getOnlyNumbers(text).split('').toList(growable: true);
+      if (_shouldApplyTheMask) {
+        var parts = _getOnlyNumbers(text).split('').toList(growable: true);
 
-      if (parts.isNotEmpty) {
-        // Ensures that the list of parts contains the minimum amount of
-        // characters to fit the precision
-        if (parts.length < precision) {
-          parts = [...List.filled(precision, '0'), ...parts];
+        if (parts.isNotEmpty) {
+          // Ensures that the list of parts contains the minimum amount of
+          // characters to fit the precision
+          if (parts.length < precision + 1) {
+            parts = [...List.filled(precision, '0'), ...parts];
+          }
+
+          parts.insert(parts.length - precision, '.');
+          updateValue(double.parse(parts.join()));
         }
-
-        parts.insert(parts.length - precision, '.');
-        updateValue(double.parse(parts.join()));
       }
     });
 
@@ -59,7 +62,13 @@ class MoneyMaskedTextController extends TextEditingController {
   /// Defaults to 2
   final int precision;
 
+  /// The last valid numeric value
   double _lastValue;
+
+  /// Used to ensure that the listener will not try to update the mask when
+  /// updating the text internally, thus reducing the number of operations when
+  /// applying a mask (works as a mutex)
+  bool _shouldApplyTheMask;
 
   /// The numeric value of the text
   double get numberValue {
@@ -97,19 +106,25 @@ class MoneyMaskedTextController extends TextEditingController {
       masked = leftSymbol + masked;
     }
 
-    _updateCursorPosition(masked);
+    _updateText(masked);
+  }
+
+  void _updateText(String newText) {
+    if (text != newText) {
+      _shouldApplyTheMask = false;
+      text = newText;
+      _shouldApplyTheMask = true;
+
+      _updateCursorPosition();
+    }
   }
 
   /// Moves the cursor
-  void _updateCursorPosition(String masked) {
-    if (masked != text) {
-      text = masked;
-
-      final cursorPosition = super.text.length - rightSymbol.length;
-      selection = TextSelection.fromPosition(
-        TextPosition(offset: cursorPosition),
-      );
-    }
+  void _updateCursorPosition() {
+    final cursorPosition = text.length - rightSymbol.length;
+    selection = TextSelection.fromPosition(
+      TextPosition(offset: cursorPosition),
+    );
   }
 
   /// Ensures [rightSymbol] does not contains numbers
