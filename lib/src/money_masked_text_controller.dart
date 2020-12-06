@@ -17,10 +17,20 @@ class MoneyMaskedTextController extends TextEditingController {
     _validateConfig();
 
     addListener(() {
-      updateValue(numberValue);
+      var parts = _getOnlyNumbers(text).split('').toList(growable: true);
+
+      if (parts.isNotEmpty) {
+        // Ensures that the list of parts contains the minimum amount of
+        // characters to fit the precision
+        if (parts.length < precision) {
+          parts = [...List.filled(precision, '0'), ...parts];
+        }
+
+        parts.insert(parts.length - precision, '.');
+        updateValue(double.parse(parts.join()));
+      }
     });
 
-    _lastValue = 0;
     updateValue(initialValue);
   }
 
@@ -87,6 +97,11 @@ class MoneyMaskedTextController extends TextEditingController {
       masked = leftSymbol + masked;
     }
 
+    _updateCursorPosition(masked);
+  }
+
+  /// Moves the cursor
+  void _updateCursorPosition(String masked) {
     if (masked != text) {
       text = masked;
 
