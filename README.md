@@ -1,4 +1,8 @@
-# extended_masked_text
+<p align="center">
+    <img src="assets/logo.png" alt="Extended Masked Text Logo" />
+</p>
+
+# Extended Masked Text
 
 This package is based on the source code of [flutter_masked_text](https://pub.dev/packages/flutter_masked_text) and is an attempt to fix some bugs and continue the development of the original one.
 
