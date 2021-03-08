@@ -1,3 +1,7 @@
+## 2.0.0+1
+
+* Fix logo url
+
 ## 2.0.0
 
 * Migrates to null safety

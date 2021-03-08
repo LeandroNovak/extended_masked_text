@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/logo.png" alt="Extended Masked Text Logo" />
+    <img src="https://raw.githubusercontent.com/LeandroNovak/extended_masked_text/main/assets/logo.png" alt="Extended Masked Text Logo" />
 </p>
 
 # Extended Masked Text
