@@ -1,3 +1,9 @@
+## 2.0.0
+
+* Migrates to null safety
+* Migrates example project to null safety
+* Add logo to README.md
+
 ## 1.1.0
 
 * Fixes an undesired behavior in which the cursor jumped to the end when trying to update the middle of the value
