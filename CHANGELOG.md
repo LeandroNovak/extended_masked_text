@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Adds beforeChange and afterChange to MaskedTextController
+
 ## 2.0.0+1
 
 * Fix logo url
