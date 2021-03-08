@@ -13,6 +13,7 @@ void main() {
     });
 
     test(
+        // ignore: lines_longer_than_80_chars
         '12345678901 with mask 000.000.000-00 and changed results 123.456.789.01',
         () {
       final cpfController = MaskedTextController(
@@ -142,6 +143,7 @@ void main() {
     });
 
     test(
+        // ignore: lines_longer_than_80_chars
         'rightSymbol " US\$" with 12345678901234 must results in 123.456.789.012,34 US\$',
         () {
       final controller = MoneyMaskedTextController(rightSymbol: ' US\$');
@@ -186,6 +188,7 @@ void main() {
     });
 
     test(
+        // ignore: lines_longer_than_80_chars
         'number value for leftSymbol "R\$ " and null initial value must result in 0.0',
         () {
       final controller = MoneyMaskedTextController(
@@ -206,6 +209,7 @@ void main() {
     });
 
     test(
+        // ignore: lines_longer_than_80_chars
         'number value for rightSymbol " US\$" and null initial value must resut in 0.0\$',
         () {
       final controller = MoneyMaskedTextController(

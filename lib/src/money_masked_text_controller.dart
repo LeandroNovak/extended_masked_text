@@ -1,20 +1,15 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 
 /// A [TextEditingController] extended to apply masks to currency values
 class MoneyMaskedTextController extends TextEditingController {
   MoneyMaskedTextController({
-    double initialValue,
+    double? initialValue,
     this.decimalSeparator = ',',
     this.thousandSeparator = '.',
     this.rightSymbol = '',
     this.leftSymbol = '',
     this.precision = 2,
-  })  : assert(decimalSeparator != null),
-        assert(thousandSeparator != null),
-        assert(rightSymbol != null),
-        assert(leftSymbol != null),
-        assert(precision != null) {
+  }) {
     _validateConfig();
     _shouldApplyTheMask = true;
 
@@ -64,12 +59,12 @@ class MoneyMaskedTextController extends TextEditingController {
   final int precision;
 
   /// The last valid numeric value
-  double _lastValue;
+  double? _lastValue;
 
   /// Used to ensure that the listener will not try to update the mask when
   /// updating the text internally, thus reducing the number of operations when
   /// applying a mask (works as a mutex)
-  bool _shouldApplyTheMask;
+  late bool _shouldApplyTheMask;
 
   /// The numeric value of the text
   double get numberValue {
@@ -86,12 +81,12 @@ class MoneyMaskedTextController extends TextEditingController {
   static const int _maxNumLength = 12;
 
   /// Updates the value and applies the mask
-  void updateValue(double value) {
+  void updateValue(double? value) {
     if (value == null) {
       return;
     }
 
-    var valueToUse = value;
+    double? valueToUse = value;
 
     if (value.toStringAsFixed(0).length > _maxNumLength) {
       valueToUse = _lastValue;
@@ -99,7 +94,7 @@ class MoneyMaskedTextController extends TextEditingController {
       _lastValue = value;
     }
 
-    final masked = _applyMask(valueToUse);
+    final masked = _applyMask(valueToUse!);
 
     _updateText(masked);
   }

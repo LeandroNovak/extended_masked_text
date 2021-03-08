@@ -37,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              RaisedButton(
+              ElevatedButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => MaskedTextSample(),
@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 child: const Text('Masked Controller'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => MoneyMaskedTextSample(),

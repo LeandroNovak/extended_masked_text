@@ -1,16 +1,19 @@
 name: example
 description:  Sample app for the Extended Masked Text package.
 
+publish_to: none
+
 version: 1.0.0
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
-  flutter:
-    sdk: flutter
   extended_masked_text:
     path: ../
+  flutter:
+    sdk: flutter
+
 
 dev_dependencies:
   flutter_test:

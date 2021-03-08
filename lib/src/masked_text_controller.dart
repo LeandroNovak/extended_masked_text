@@ -3,11 +3,10 @@ import 'package:flutter/widgets.dart';
 /// A [TextEditingController] extended to provide custom masks to flutter
 class MaskedTextController extends TextEditingController {
   MaskedTextController({
-    @required this.mask,
-    String text,
-    Map<String, RegExp> translator,
-  })  : assert(mask != null),
-        super(text: text) {
+    required this.mask,
+    String? text,
+    Map<String, RegExp>? translator,
+  }) : super(text: text) {
     this.translator = translator ?? MaskedTextController.getDefaultTranslator();
 
     addListener(() {
@@ -22,9 +21,9 @@ class MaskedTextController extends TextEditingController {
   String mask;
 
   /// Translator from mask characters to [RegExp]
-  Map<String, RegExp> translator;
+  late Map<String, RegExp> translator;
 
-  String _lastUpdatedText;
+  String? _lastUpdatedText;
 
   /// Default [RegExp] for each character available for the mask
   ///
@@ -60,8 +59,7 @@ class MaskedTextController extends TextEditingController {
 
   /// Updates the current [text] with a new one applying the [mask]
   void updateText(String newText) {
-    assert(newText != null, 'Text must not be null');
-    text = (newText != null) ? _applyMask(mask, newText) : '';
+    text = _applyMask(mask, newText);
     _lastUpdatedText = text;
     moveCursorToEnd();
   }
@@ -95,7 +93,7 @@ class MaskedTextController extends TextEditingController {
 
       // apply translator if match with the current mask character
       if (translator.containsKey(maskChar)) {
-        if (translator[maskChar].hasMatch(valueChar)) {
+        if (translator[maskChar]!.hasMatch(valueChar)) {
           result.write(valueChar);
           maskCharIndex += 1;
         }
