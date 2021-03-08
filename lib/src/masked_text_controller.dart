@@ -1,19 +1,34 @@
 import 'package:flutter/widgets.dart';
 
+typedef BeforeChangeCallback = bool Function(String previous, String next);
+typedef AfterChangeCallback = void Function(String previous, String next);
+
 /// A [TextEditingController] extended to provide custom masks to flutter
 class MaskedTextController extends TextEditingController {
   MaskedTextController({
     required this.mask,
+    this.beforeChange,
+    this.afterChange,
     String? text,
     Map<String, RegExp>? translator,
   }) : super(text: text) {
     this.translator = translator ?? MaskedTextController.getDefaultTranslator();
 
+    // Initialize the beforeChange and afterChange callbacks if they are null
+    beforeChange ??= (previous, next) => true;
+    afterChange ??= (previous, next) {};
+
     addListener(() {
-      updateText(this.text);
+      final previous = _lastUpdatedText;
+
+      if (beforeChange!(previous, this.text)) {
+        updateText(this.text);
+        afterChange!(previous, this.text);
+      } else {
+        updateText(_lastUpdatedText);
+      }
     });
 
-    _lastUpdatedText = '';
     updateText(this.text);
   }
 
@@ -23,7 +38,18 @@ class MaskedTextController extends TextEditingController {
   /// Translator from mask characters to [RegExp]
   late Map<String, RegExp> translator;
 
-  String? _lastUpdatedText;
+  /// A function called before the text is updated.
+  /// Returns a boolean informing whether the text should be updated.
+  ///
+  /// Defaults to a function returning true
+  BeforeChangeCallback? beforeChange;
+
+  /// A function called after the text is updated
+  ///
+  /// Defaults to an empty function
+  AfterChangeCallback? afterChange;
+
+  String _lastUpdatedText = '';
 
   /// Default [RegExp] for each character available for the mask
   ///
@@ -69,7 +95,7 @@ class MaskedTextController extends TextEditingController {
     // only moves the cursor if text is not selected
     if (selection.baseOffset == selection.extentOffset) {
       selection = TextSelection.fromPosition(
-        TextPosition(offset: (_lastUpdatedText ?? '').length),
+        TextPosition(offset: _lastUpdatedText.length),
       );
     }
   }
