@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:extended_masked_text/extended_masked_text.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -75,6 +78,48 @@ void main() {
       controller.updateText('12345678');
 
       expect(controller.text, '1234 **** **** 5678');
+    });
+
+    test('check cursor position after edit in specifc possition', () {
+      final cpfController = MaskedTextController(
+        text: '12345678901',
+        mask: '000.000.000-00',
+      );
+
+      expect(cpfController.text, '123.456.789-01');
+      cpfController.selection = TextSelection.fromPosition(
+        const TextPosition(offset: 1),
+      );
+      cpfController.text = '19345678901';
+      expect(cpfController.selection.baseOffset, 2);
+    });
+
+    test('always force cursor to end of sentence', () {
+      final cpfController = MaskedTextController(
+        text: '12345678901',
+        mask: '000.000.000-00',
+        forceCursor: CursorBehaviour.end,
+      );
+
+      expect(cpfController.text, '123.456.789-01');
+      cpfController.selection = TextSelection.fromPosition(
+        const TextPosition(offset: 1),
+      );
+      expect(cpfController.selection.baseOffset, '123.456.789-01'.length);
+    });
+
+    test('always force cursor to start of sentence', () {
+      final cpfController = MaskedTextController(
+        text: '12345678901',
+        mask: '000.000.000-00',
+        forceCursor: CursorBehaviour.start,
+      );
+
+      expect(cpfController.text, '123.456.789-01');
+      cpfController.selection = TextSelection.fromPosition(
+        const TextPosition(offset: 1),
+      );
+      expect(cpfController.selection.baseOffset, 0);
     });
   });
 
