@@ -6,7 +6,7 @@ typedef BeforeChangeCallback = bool Function(String previous, String next);
 typedef AfterChangeCallback = void Function(String previous, String next);
 
 enum CursorBehaviour {
-  unlock,
+  unlocked,
   start,
   end,
 }
@@ -17,7 +17,7 @@ class MaskedTextController extends TextEditingController {
     required this.mask,
     this.beforeChange,
     this.afterChange,
-    this.forceCursor = CursorBehaviour.unlock,
+    this.cursorBehavior = CursorBehaviour.unlocked,
     String? text,
     Map<String, RegExp>? translator,
   }) : super(text: text) {
@@ -27,7 +27,7 @@ class MaskedTextController extends TextEditingController {
     beforeChange ??= (previous, next) => true;
     afterChange ??= (previous, next) {};
 
-    addListener(listener);
+    addListener(_listener);
     _lastCursor = this.text.length;
     updateText(this.text);
   }
@@ -50,7 +50,7 @@ class MaskedTextController extends TextEditingController {
   AfterChangeCallback? afterChange;
 
   /// Configure if the cursor should be forced
-  CursorBehaviour forceCursor;
+  CursorBehaviour cursorBehavior;
 
   String _lastUpdatedText = '';
 
@@ -78,7 +78,7 @@ class MaskedTextController extends TextEditingController {
   }
 
   /// Check for user updates in the TextField
-  void listener() {
+  void _listener() {
     // only changing the text
     if (text != _lastUpdatedText) {
       final previous = _lastUpdatedText;
@@ -90,8 +90,8 @@ class MaskedTextController extends TextEditingController {
       }
     }
 
-    if (forceCursor != CursorBehaviour.unlock) {
-      forceCursor == CursorBehaviour.start
+    if (cursorBehavior != CursorBehaviour.unlocked) {
+      cursorBehavior == CursorBehaviour.start
           ? _moveCursor(0, true)
           : _moveCursor(_lastUpdatedText.length, true);
     }
@@ -125,17 +125,21 @@ class MaskedTextController extends TextEditingController {
     final previousCursor = _lastCursor;
 
     _lastUpdatedText = _applyMask(_mask, newText);
-    final newCursor = _calculateCursor(
-        previousCursor, _oldMask, _mask, oldText, _lastUpdatedText);
+    final newCursor = _calculateCursorPosition(
+      previousCursor,
+      _oldMask,
+      _mask,
+      oldText,
+      _lastUpdatedText,
+    );
+
     previousMask = mask;
     text = _lastUpdatedText;
     _moveCursor(newCursor);
   }
 
   /// Moves cursor to the end of the text
-  void moveCursorToEnd() {
-    _moveCursor(_lastUpdatedText.length, true);
-  }
+  void moveCursorToEnd() => _moveCursor(_lastUpdatedText.length, true);
 
   /// Moves cursor to specific position
   void _moveCursor(int index, [bool force = false]) {
@@ -149,6 +153,7 @@ class MaskedTextController extends TextEditingController {
     }
   }
 
+  /// Applies the [mask] to the [value]
   String _applyMask(String mask, String value) {
     final result = StringBuffer('');
     var maskCharIndex = 0;
@@ -183,6 +188,7 @@ class MaskedTextController extends TextEditingController {
     return result.toString();
   }
 
+  /// Removes the [mask] from the [value]
   String _removeMask(String mask, String value) {
     final result = StringBuffer('');
     var maskCharIndex = 0;
@@ -211,8 +217,13 @@ class MaskedTextController extends TextEditingController {
   }
 
   /// Calculates next cursor position from given text alteration
-  int _calculateCursor(int oldCursor, String oldMask, String newMask,
-      String oldText, String newText) {
+  int _calculateCursorPosition(
+    int oldCursor,
+    String oldMask,
+    String newMask,
+    String oldText,
+    String newText,
+  ) {
     // it is better to remove mask since user can use inputFormatters
     // generating unknown alteration before listener is called
     final oldUnmask = _removeMask(oldMask, oldText);

@@ -1,3 +1,7 @@
+## 2.2.0
+
+* Adds CursorBehaviour to MaskedTextController
+
 ## 2.1.0
 
 * Adds beforeChange and afterChange to MaskedTextController

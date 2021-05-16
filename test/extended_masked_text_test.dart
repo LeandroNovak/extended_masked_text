@@ -98,7 +98,7 @@ void main() {
       final cpfController = MaskedTextController(
         text: '12345678901',
         mask: '000.000.000-00',
-        forceCursor: CursorBehaviour.end,
+        cursorBehavior: CursorBehaviour.end,
       );
 
       expect(cpfController.text, '123.456.789-01');
@@ -112,7 +112,7 @@ void main() {
       final cpfController = MaskedTextController(
         text: '12345678901',
         mask: '000.000.000-00',
-        forceCursor: CursorBehaviour.start,
+        cursorBehavior: CursorBehaviour.start,
       );
 
       expect(cpfController.text, '123.456.789-01');
