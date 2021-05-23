@@ -1,3 +1,7 @@
+## 2.2.1
+
+* Adds a workaround to fix behavior from flutter 2.2
+
 ## 2.2.0
 
 * Adds CursorBehaviour to MaskedTextController
