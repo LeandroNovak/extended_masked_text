@@ -135,7 +135,9 @@ class MaskedTextController extends TextEditingController {
 
     previousMask = mask;
     text = _lastUpdatedText;
-    _moveCursor(newCursor);
+    // To avoid concurrent cursor update uppon text update, it is desired
+    // to delay this update to ensure that the update occurs correctly
+    Future.delayed(Duration.zero).then((value) => _moveCursor(newCursor));
   }
 
   /// Moves cursor to the end of the text
@@ -251,14 +253,16 @@ class MaskedTextController extends TextEditingController {
     // find new cursor position based on new mask
     var countDown = oldUnmaskCursor + newChars;
     var maskCount = 0;
-    for (var i = 0; i < newText.length && i < newMask.length; i++) {
+    for (var i = 0;
+        i < newText.length && i < newMask.length && countDown >= 0;
+        i++) {
       if (!translator.containsKey(newMask[i])) {
         maskCount++;
-      } else if (--countDown < 0) {
-        break;
+      } else {
+        countDown--;
       }
     }
 
-    return oldUnmaskCursor + maskCount + max<int>(newChars, 0);
+    return oldUnmaskCursor + maskCount + newChars;
   }
 }

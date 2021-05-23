@@ -80,7 +80,7 @@ void main() {
       expect(controller.text, '1234 **** **** 5678');
     });
 
-    test('check cursor position after edit in specifc possition', () {
+    test('check cursor position after edit in specifc possition', () async {
       final cpfController = MaskedTextController(
         text: '12345678901',
         mask: '000.000.000-00',
@@ -90,7 +90,9 @@ void main() {
       cpfController.selection = TextSelection.fromPosition(
         const TextPosition(offset: 1),
       );
+
       cpfController.text = '19345678901';
+      await Future.delayed(Duration.zero);
       expect(cpfController.selection.baseOffset, 2);
     });
 
