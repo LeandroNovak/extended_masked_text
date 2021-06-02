@@ -193,26 +193,19 @@ class MaskedTextController extends TextEditingController {
   /// Removes the [mask] from the [value]
   String _removeMask(String mask, String value) {
     final result = StringBuffer('');
-    var maskCharIndex = 0;
-    var valueCharIndex = 0;
+    var charIndex = 0;
 
-    while (maskCharIndex != mask.length && valueCharIndex != value.length) {
-      final maskChar = mask[maskCharIndex];
-      final valueChar = value[valueCharIndex];
+    while (charIndex != mask.length && charIndex != value.length) {
+      final maskChar = mask[charIndex];
+      final valueChar = value[charIndex];
 
       // apply translator if match with the current mask character
-      if (translator.containsKey(maskChar)) {
-        if (translator[maskChar]!.hasMatch(valueChar)) {
-          result.write(valueChar);
-          maskCharIndex += 1;
-        }
-
-        valueCharIndex += 1;
-        continue;
+      if (translator.containsKey(maskChar)
+          && translator[maskChar]!.hasMatch(valueChar)) {
+        result.write(valueChar);
       }
 
-      // not a masked value, jump fixed char on mask
-      maskCharIndex += 1;
+      charIndex += 1;
     }
 
     return result.toString();
