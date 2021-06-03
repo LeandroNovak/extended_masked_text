@@ -195,7 +195,7 @@ class MaskedTextController extends TextEditingController {
     final result = StringBuffer('');
     var charIndex = 0;
 
-    while (charIndex != mask.length && charIndex != value.length) {
+    while (charIndex < mask.length && charIndex < value.length) {
       final maskChar = mask[charIndex];
       final valueChar = value[charIndex];
 
