@@ -26,7 +26,7 @@ void main() {
 
       expect(cpfController.text, '123.456.789-01');
 
-      cpfController.updateMask('000.000.0000-0');
+      cpfController.updateMask('000.000.0000-0', shouldUpdateValue: true);
 
       expect(cpfController.text, '123.456.7890-1');
     });
