@@ -175,12 +175,10 @@ class MaskedTextController extends TextEditingController {
     _previousMask = mask;
     text = _lastUpdatedText;
 
-    if (selection.baseOffset == -1) {
-      // Mark to update in next listner iteration
-      _cursorUpdatePending = true;
-      _cursorCalculatedPosition = newCursor;
-      _moveCursor(_cursorCalculatedPosition);
-    }
+    // Mark to update in next listner iteration
+    _cursorUpdatePending = true;
+    _cursorCalculatedPosition = newCursor;
+    _moveCursor(_cursorCalculatedPosition);
   }
 
   /// Moves cursor to the end of the text
