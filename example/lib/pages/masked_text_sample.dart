@@ -21,24 +21,24 @@ class _MaskedTextSampleState extends State<MaskedTextSample> {
 
   @override
   void initState() {
-    _phoneMaskedTextController.beforeChange = (previous, next) {
+    beforeChange(_phoneMaskedTextController);
+    super.initState();
+  }
+
+  void beforeChange(MaskedTextController controller) {
+    controller.beforeChange = (previous, next) {
       final unmasked = next.replaceAll(RegExp(r'[^0-9]'), '');
       if (unmasked.length <= 8) {
-        _phoneMaskedTextController.updateMask('0000-0000',
-            shouldMoveCursorToEnd: false);
+        controller.updateMask('0000-0000', shouldMoveCursorToEnd: false);
       } else if (unmasked.length <= 9) {
-        _phoneMaskedTextController.updateMask('00000-0000',
-            shouldMoveCursorToEnd: false);
+        controller.updateMask('00000-0000', shouldMoveCursorToEnd: false);
       } else if (unmasked.length <= 10) {
-        _phoneMaskedTextController.updateMask('(00) 0000-0000',
-            shouldMoveCursorToEnd: false);
+        controller.updateMask('(00) 0000-0000', shouldMoveCursorToEnd: false);
       } else if (unmasked.length <= 11) {
-        _phoneMaskedTextController.updateMask('(00) 00000-0000',
-            shouldMoveCursorToEnd: false);
+        controller.updateMask('(00) 00000-0000', shouldMoveCursorToEnd: false);
       }
       return true;
     };
-    super.initState();
   }
 
   @override
@@ -50,11 +50,13 @@ class _MaskedTextSampleState extends State<MaskedTextSample> {
           padding: const EdgeInsets.all(8),
           child: Column(
             children: <Widget>[
+              const Divider(),
+              const Text('With inputFormatters'),
               TextField(
                 controller: _maskedTextController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp('[0-9a-z]')),
+                  FilteringTextInputFormatter.allow(RegExp('[0-9]')),
                 ],
                 onChanged: (_) {
                   print(_maskedTextController.value);
@@ -67,6 +69,24 @@ class _MaskedTextSampleState extends State<MaskedTextSample> {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp('[0-9]')),
                 ],
+                onChanged: (_) {
+                  print(_phoneMaskedTextController.value);
+                },
+                decoration: const InputDecoration(hintText: 'Phone'),
+              ),
+              const Divider(height: 20),
+              const Text('Without inputFormatters'),
+              TextField(
+                controller: _maskedTextController,
+                keyboardType: TextInputType.number,
+                onChanged: (_) {
+                  print(_maskedTextController.value);
+                },
+                decoration: const InputDecoration(hintText: 'CPF'),
+              ),
+              TextField(
+                controller: _phoneMaskedTextController,
+                keyboardType: TextInputType.number,
                 onChanged: (_) {
                   print(_phoneMaskedTextController.value);
                 },
