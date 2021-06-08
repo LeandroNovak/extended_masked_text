@@ -52,9 +52,20 @@ class MaskedTextController extends TextEditingController {
   /// Configure if the cursor should be forced
   CursorBehaviour cursorBehavior;
 
+  /// Indicates what was the last text inputted by the user with mask
   String _lastUpdatedText = '';
 
+  /// Indicates where the last cursor position was
   int _lastCursor = 0;
+
+  /// This flag indicates if the curosr update is pending after a [updateText]
+  bool _cursorUpdatePending = false;
+
+  /// Cursor calculated in [updateText] call
+  int _cursorCalculatedPosition = 0;
+
+  /// Save previous mask used to check for update
+  String? _previousMask;
 
   /// Default [RegExp] for each character available for the mask
   ///
@@ -77,49 +88,77 @@ class MaskedTextController extends TextEditingController {
     }
   }
 
+  /// Lock to prevent multiple calls, since it needs some shared variables
+  bool _lockProcess = false;
+
   /// Check for user updates in the TextField
   void _listener() {
-    // only changing the text
-    if (text != _lastUpdatedText) {
-      final previous = _lastUpdatedText;
-      if (beforeChange!(previous, text)) {
-        updateText(text);
-        afterChange!(previous, text);
-      } else {
-        updateText(_lastUpdatedText);
+    if (!_lockProcess) {
+      try {
+        _lockProcess = true;
+
+        // only changing the text
+        if (text != _lastUpdatedText) {
+          final previous = _lastUpdatedText;
+          if (beforeChange!(previous, text)) {
+            updateText(text);
+            afterChange!(previous, text);
+          } else {
+            updateText(_lastUpdatedText);
+          }
+        }
+
+        // this is called in next iteration, after updateText is called
+        if (_cursorUpdatePending &&
+            selection.baseOffset != _cursorCalculatedPosition) {
+          _moveCursor(_cursorCalculatedPosition);
+          _cursorUpdatePending = false;
+        }
+
+        if (cursorBehavior != CursorBehaviour.unlocked) {
+          cursorBehavior == CursorBehaviour.start
+              ? _moveCursor(0, true)
+              : _moveCursor(_lastUpdatedText.length, true);
+        }
+
+        // only changing cursor position
+        if (_lastCursor != selection.baseOffset && selection.baseOffset > -1) {
+          _lastCursor = selection.baseOffset;
+        }
+      } finally {
+        _lockProcess = false;
       }
-    }
-
-    if (cursorBehavior != CursorBehaviour.unlocked) {
-      cursorBehavior == CursorBehaviour.start
-          ? _moveCursor(0, true)
-          : _moveCursor(_lastUpdatedText.length, true);
-    }
-
-    // only changing cursor position
-    if (_lastCursor != selection.baseOffset && selection.baseOffset > -1) {
-      _lastCursor = selection.baseOffset;
     }
   }
 
-  String? previousMask;
-
   /// Replaces [mask] with a [newMask] and moves cursor to the end if
   /// [shouldMoveCursorToEnd] is true
-  void updateMask(String newMask, {bool shouldMoveCursorToEnd = true}) {
-    previousMask = mask;
-    mask = newMask;
-    updateText(text);
+  /// [shouldUpdateValue] Set to true to request a following update in the text.
+  ///   If this method is being called in [beforeChange] this MUST be false,
+  ///   since it will call [updateText] as next step automatically.
+  void updateMask(
+    String newMask, {
+    bool shouldMoveCursorToEnd = true,
+    bool shouldUpdateValue = false,
+  }) {
+    if (mask != newMask) {
+      _previousMask = mask;
+      mask = newMask;
 
-    if (shouldMoveCursorToEnd) {
-      moveCursorToEnd();
+      if (shouldUpdateValue) {
+        updateText(text);
+      }
+
+      if (shouldMoveCursorToEnd) {
+        moveCursorToEnd();
+      }
     }
   }
 
   /// Updates the current [text] with a new one applying the [mask]
   void updateText(String newText) {
     // save values for possible concurrent updates
-    final _oldMask = previousMask ?? mask;
+    final _oldMask = _previousMask ?? mask;
     final _mask = mask;
     final oldText = _lastUpdatedText;
     final previousCursor = _lastCursor;
@@ -133,24 +172,32 @@ class MaskedTextController extends TextEditingController {
       _lastUpdatedText,
     );
 
-    previousMask = mask;
+    _previousMask = mask;
     text = _lastUpdatedText;
-    // To avoid concurrent cursor update uppon text update, it is desired
-    // to delay this update to ensure that the update occurs correctly
-    Future.delayed(Duration.zero).then((value) => _moveCursor(newCursor));
+
+    if (selection.baseOffset == -1) {
+      // Mark to update in next listner iteration
+      _cursorUpdatePending = true;
+      _cursorCalculatedPosition = newCursor;
+      _moveCursor(_cursorCalculatedPosition);
+    }
   }
 
   /// Moves cursor to the end of the text
   void moveCursorToEnd() => _moveCursor(_lastUpdatedText.length, true);
 
+  /// Retrieve current value without mask
+  String get unmasked => _removeMask(mask, text);
+
+  /// Unmask the [text] given a [mask]
+  String unmask(String mask, String text) => _removeMask(mask, text);
+
   /// Moves cursor to specific position
   void _moveCursor(int index, [bool force = false]) {
     // only moves the cursor if it is not defined or text is not selected
     if (force || selection.baseOffset == selection.extentOffset) {
-      final value = min(max(index, 0), _lastUpdatedText.length);
-      selection = TextSelection.fromPosition(
-        TextPosition(offset: value),
-      );
+      final value = min(max(index, 0), text.length);
+      selection = TextSelection.collapsed(offset: value);
       _lastCursor = value;
     }
   }
@@ -240,21 +287,21 @@ class MaskedTextController extends TextEditingController {
     }
 
     // count how many new characters was added
-    var newChars = newUnmask.length - oldUnmask.length;
-    if (newChars == 0 &&
+    var unmaskNewChars = newUnmask.length - oldUnmask.length;
+    if (unmaskNewChars == 0 &&
         oldMask == newMask &&
         oldText != newText &&
         oldText.length == newText.length &&
         oldCursor < oldMask.length) {
       // the next character was update, move cursor
-      newChars++;
+      unmaskNewChars++;
     }
 
     // find new cursor position based on new mask
-    var countDown = oldUnmaskCursor + newChars;
+    var countDown = oldUnmaskCursor + unmaskNewChars;
     var maskCount = 0;
     for (var i = 0;
-        i < newText.length && i < newMask.length && countDown >= 0;
+        i < newText.length && i < newMask.length && countDown > 0;
         i++) {
       if (!translator.containsKey(newMask[i])) {
         maskCount++;
@@ -263,6 +310,6 @@ class MaskedTextController extends TextEditingController {
       }
     }
 
-    return oldUnmaskCursor + maskCount + newChars;
+    return oldUnmaskCursor + maskCount + unmaskNewChars;
   }
 }

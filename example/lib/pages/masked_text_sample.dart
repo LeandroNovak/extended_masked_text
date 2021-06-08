@@ -35,8 +35,6 @@ class _MaskedTextSampleState extends State<MaskedTextSample> {
       } else if (unmasked.length <= 11) {
         _phoneMaskedTextController.updateMask('(00) 00000-0000',
             shouldMoveCursorToEnd: false);
-      } else {
-        return false;
       }
       return true;
     };
