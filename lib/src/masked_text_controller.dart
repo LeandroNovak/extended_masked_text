@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 typedef BeforeChangeCallback = bool Function(String previous, String next);
@@ -94,6 +95,7 @@ class MaskedTextController extends TextEditingController {
 
   /// Check for user updates in the TextField
   void _listener() {
+    print('${selection.baseOffset}');
     if (!_lockProcess) {
       try {
         _lockProcess = true;
@@ -284,7 +286,7 @@ class MaskedTextController extends TextEditingController {
     // When deleting one character, the listenner method will trigger a cursor
     // update before triggering the text update, to compensate that, this
     // condition return the cursor for the previous location before calculation.
-    if (Platform.isIOS && newUnmask.length == oldUnmask.length - 1) {
+    if (!kIsWeb && Platform.isIOS && newUnmask.length == oldUnmask.length - 1) {
       oldUnmaskCursor++;
     }
 
