@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
@@ -278,6 +279,15 @@ class MaskedTextController extends TextEditingController {
 
     // find cursor when old text is unmask
     var oldUnmaskCursor = oldCursor;
+
+    // NOTE: This is a bugfix for iOS platform.
+    // When deleting one character, the listenner method will trigger a cursor
+    // update before triggering the text update, to compensate that, this
+    // condition return the cursor for the previous location before calculation.
+    if (Platform.isIOS && newUnmask.length == oldUnmask.length - 1) {
+      oldUnmaskCursor++;
+    }
+
     for (var k = 0; k < oldCursor && k < oldMask.length; k++) {
       if (!translator.containsKey(oldMask[k])) {
         oldUnmaskCursor--;
