@@ -1,3 +1,8 @@
+## 2.3.0
+
+* Adds improvements to cursor position calculation
+* Adds a getter to unmasked text
+
 ## 2.2.1
 
 * Adds a workaround to fix behavior from flutter 2.2

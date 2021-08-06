@@ -248,8 +248,8 @@ class MaskedTextController extends TextEditingController {
       final valueChar = value[charIndex];
 
       // apply translator if match with the current mask character
-      if (translator.containsKey(maskChar)
-          && translator[maskChar]!.hasMatch(valueChar)) {
+      if (translator.containsKey(maskChar) &&
+          translator[maskChar]!.hasMatch(valueChar)) {
         result.write(valueChar);
       }
 
