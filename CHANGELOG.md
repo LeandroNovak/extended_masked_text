@@ -1,3 +1,7 @@
+## 2.3.1
+
+* Remove forgotten print
+
 ## 2.3.0
 
 * Adds improvements to cursor position calculation
