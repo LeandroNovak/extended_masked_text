@@ -95,7 +95,6 @@ class MaskedTextController extends TextEditingController {
 
   /// Check for user updates in the TextField
   void _listener() {
-    print('${selection.baseOffset}');
     if (!_lockProcess) {
       try {
         _lockProcess = true;
