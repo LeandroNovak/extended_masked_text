@@ -20,10 +20,17 @@ class MaskedTextController extends TextEditingController {
     this.beforeChange,
     this.afterChange,
     this.cursorBehavior = CursorBehaviour.unlocked,
+    this.maskStartSpecialCharacters = true,
     String? text,
     Map<String, RegExp>? translator,
   }) : super(text: text) {
     this.translator = translator ?? MaskedTextController.getDefaultTranslator();
+
+    //Reset the variable to check whether or not it needs to be deleted.
+    if ((maskStartSpecialCharacters &&
+        !alphaNumRegExp.hasMatch(mask.characters.first))) {
+      deleteSpecialCharacters = _removeLastSpecialCharacter;
+    }
 
     // Initialize the beforeChange and afterChange callbacks if they are null
     beforeChange ??= (previous, next) => true;
@@ -36,6 +43,15 @@ class MaskedTextController extends TextEditingController {
 
   /// The current applied mask
   String mask;
+
+  /// Alphanumeric expression to determine whether the last special character should be deleted.
+  final alphaNumRegExp = RegExp(r'^[a-zA-Z0-9]+$');
+
+  /// When mask contains a start special character by default will be delete
+  bool maskStartSpecialCharacters;
+
+  ///If the [maskStartSpecialCharacters] is true and [mask] start with special character, this function will be delete the last character
+  Function? deleteSpecialCharacters;
 
   /// Translator from mask characters to [RegExp]
   late Map<String, RegExp> translator;
@@ -95,10 +111,10 @@ class MaskedTextController extends TextEditingController {
 
   /// Check for user updates in the TextField
   void _listener() {
+    deleteSpecialCharacters?.call();
     if (!_lockProcess) {
       try {
         _lockProcess = true;
-
         // only changing the text
         if (text != _lastUpdatedText) {
           final previous = _lastUpdatedText;
@@ -132,6 +148,8 @@ class MaskedTextController extends TextEditingController {
       }
     }
   }
+
+  void deleteSpecialCharacter() {}
 
   /// Replaces [mask] with a [newMask] and moves cursor to the end if
   /// [shouldMoveCursorToEnd] is true
@@ -313,5 +331,16 @@ class MaskedTextController extends TextEditingController {
     }
 
     return oldUnmaskCursor + maskCount + unmaskNewChars;
+  }
+
+  void _removeLastSpecialCharacter() {
+    if ((this.text.length == 1)) {
+      final invalidCharacters = RegExp(r'^[a-zA-Z0-9]+$');
+
+      if (!(invalidCharacters.hasMatch(mask.characters.first)) &&
+          !(invalidCharacters.hasMatch(this.text.characters.first))) {
+        this.text = '';
+      }
+    }
   }
 }
