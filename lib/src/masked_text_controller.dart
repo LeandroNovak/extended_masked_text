@@ -16,6 +16,7 @@ enum CursorBehaviour {
 /// A [TextEditingController] extended to provide custom masks to flutter
 class MaskedTextController extends TextEditingController {
   MaskedTextController({
+    this.filter,
     required this.mask,
     this.beforeChange,
     this.afterChange,
@@ -33,6 +34,7 @@ class MaskedTextController extends TextEditingController {
     _lastCursor = this.text.length;
     updateText(this.text);
   }
+  RegExp filter;
 
   /// The current applied mask
   String mask;
@@ -75,12 +77,7 @@ class MaskedTextController extends TextEditingController {
   /// '0' represents a numeric character
   /// '@' represents a alphanumeric character
   /// '*' represents any character
-  static Map<String, RegExp> getDefaultTranslator() => {
-        'A': RegExp(r'[A-Za-z]'),
-        '0': RegExp(r'[0-9]'),
-        '@': RegExp(r'[A-Za-z0-9]'),
-        '*': RegExp(r'.*')
-      };
+  static Map<String, RegExp> getDefaultTranslator() => {'A': filter ?? RegExp(r'[A-Za-z]'), '0': RegExp(r'[0-9]'), '@': RegExp(r'[A-Za-z0-9]'), '*': RegExp(r'.*')};
 
   /// Corresponding to [TextEditingController.text]
   @override
@@ -111,16 +108,13 @@ class MaskedTextController extends TextEditingController {
         }
 
         // this is called in next iteration, after updateText is called
-        if (_cursorUpdatePending &&
-            selection.baseOffset != _cursorCalculatedPosition) {
+        if (_cursorUpdatePending && selection.baseOffset != _cursorCalculatedPosition) {
           _moveCursor(_cursorCalculatedPosition);
           _cursorUpdatePending = false;
         }
 
         if (cursorBehavior != CursorBehaviour.unlocked) {
-          cursorBehavior == CursorBehaviour.start
-              ? _moveCursor(0, true)
-              : _moveCursor(_lastUpdatedText.length, true);
+          cursorBehavior == CursorBehaviour.start ? _moveCursor(0, true) : _moveCursor(_lastUpdatedText.length, true);
         }
 
         // only changing cursor position
@@ -247,8 +241,7 @@ class MaskedTextController extends TextEditingController {
       final valueChar = value[charIndex];
 
       // apply translator if match with the current mask character
-      if (translator.containsKey(maskChar) &&
-          translator[maskChar]!.hasMatch(valueChar)) {
+      if (translator.containsKey(maskChar) && translator[maskChar]!.hasMatch(valueChar)) {
         result.write(valueChar);
       }
 
@@ -290,11 +283,7 @@ class MaskedTextController extends TextEditingController {
 
     // count how many new characters was added
     var unmaskNewChars = newUnmask.length - oldUnmask.length;
-    if (unmaskNewChars == 0 &&
-        oldMask == newMask &&
-        oldText != newText &&
-        oldText.length == newText.length &&
-        oldCursor < oldMask.length) {
+    if (unmaskNewChars == 0 && oldMask == newMask && oldText != newText && oldText.length == newText.length && oldCursor < oldMask.length) {
       // the next character was update, move cursor
       unmaskNewChars++;
     }
@@ -302,9 +291,7 @@ class MaskedTextController extends TextEditingController {
     // find new cursor position based on new mask
     var countDown = oldUnmaskCursor + unmaskNewChars;
     var maskCount = 0;
-    for (var i = 0;
-        i < newText.length && i < newMask.length && countDown > 0;
-        i++) {
+    for (var i = 0; i < newText.length && i < newMask.length && countDown > 0; i++) {
       if (!translator.containsKey(newMask[i])) {
         maskCount++;
       } else {
