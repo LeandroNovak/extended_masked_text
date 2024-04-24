@@ -25,6 +25,7 @@ class MoneyMaskedTextSample extends StatelessWidget {
                 ],
                 onChanged: (_) {
                   print(_moneyMaskedTextController.value);
+                  print(_moneyMaskedTextController.unmasked);
                 },
               ),
             ],

@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:example/pages/masked_text_sample.dart';
 import 'package:example/pages/money_masked_text_sample.dart';
 import 'package:flutter/material.dart';
@@ -19,9 +20,11 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key key, this.title}) : super(key: key);
-
   final String title;
+  const MyHomePage({
+    required this.title,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
