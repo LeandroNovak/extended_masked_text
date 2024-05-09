@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -204,6 +202,15 @@ void main() {
       controller.updateValue(123.45);
 
       expect(controller.text, 'R\$ 123,45');
+    });
+
+    test(
+        'rightSymbol and leftSymbol  " R\$" and  rightSymbol "+" with value 99.99 unmasked must resut in 99,99',
+        () {
+      final controller =
+          MoneyMaskedTextController(rightSymbol: ' +', leftSymbol: r'R$');
+      controller.updateValue(99.99);
+      expect(controller.unmasked, '99,99');
     });
 
     test('precision 3 and value 123.45 results in "123,450"', () {

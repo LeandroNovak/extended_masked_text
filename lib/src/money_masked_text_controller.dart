@@ -99,6 +99,8 @@ class MoneyMaskedTextController extends TextEditingController {
     _updateText(masked);
   }
 
+  String get unmasked => _removeMask(text);
+
   /// Updates the [TextEditingController] and ensures that the listener will
   /// not trigger the mask update
   void _updateText(String newText) {
@@ -222,4 +224,7 @@ class MoneyMaskedTextController extends TextEditingController {
 
     return masked;
   }
+
+  String _removeMask(String text) =>
+      text.replaceAll(leftSymbol, '').trim().replaceAll(rightSymbol, '').trim();
 }

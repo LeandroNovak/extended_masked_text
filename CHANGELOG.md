@@ -1,3 +1,7 @@
+## 2.3.2
+
+* Adds a getter to unmasked text for MoneyMaskedTextController
+
 ## 2.3.1
 
 * Remove forgotten print
