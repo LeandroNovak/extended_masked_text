@@ -1,3 +1,11 @@
+## 3.0.0
+
+* **BREAKING:** Remove CursorBehaviour.start
+* Rename CursorBehaviour to CursorBehavior
+* Rewrite part of the code to a more modern dart approach
+* Fix some minor issues related to CursorBehavior.end
+* Remove tests related to CursorBehaviour.start
+
 ## 2.3.2
 
 * Adds a getter to unmasked text for MoneyMaskedTextController

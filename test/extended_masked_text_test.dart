@@ -1,3 +1,5 @@
+// ignore_for_file: cascade_invocations
+
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,7 +57,7 @@ void main() {
     });
 
     test('remove * translator must keep * in the mask', () {
-      final translator = MaskedTextController.getDefaultTranslator();
+      final translator = MaskedTextController.defaultTranslator;
       translator.remove('*');
       final controller = MaskedTextController(
         mask: '0000 **** **** 0000',
@@ -67,7 +69,7 @@ void main() {
     });
 
     test('remove * translator must keep * in the mask', () {
-      final translator = MaskedTextController.getDefaultTranslator();
+      final translator = MaskedTextController.defaultTranslator;
       translator.remove('*');
       final controller = MaskedTextController(
         mask: '0000 **** **** 0000',
@@ -98,7 +100,7 @@ void main() {
       final cpfController = MaskedTextController(
         text: '12345678901',
         mask: '000.000.000-00',
-        cursorBehavior: CursorBehaviour.end,
+        cursorBehavior: CursorBehavior.end,
       );
 
       expect(cpfController.text, '123.456.789-01');
@@ -106,20 +108,6 @@ void main() {
         const TextPosition(offset: 1),
       );
       expect(cpfController.selection.baseOffset, '123.456.789-01'.length);
-    });
-
-    test('always force cursor to start of sentence', () {
-      final cpfController = MaskedTextController(
-        text: '12345678901',
-        mask: '000.000.000-00',
-        cursorBehavior: CursorBehaviour.start,
-      );
-
-      expect(cpfController.text, '123.456.789-01');
-      cpfController.selection = TextSelection.fromPosition(
-        const TextPosition(offset: 1),
-      );
-      expect(cpfController.selection.baseOffset, 0);
     });
   });
 

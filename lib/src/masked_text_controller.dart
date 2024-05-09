@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'dart:math';
 
+import 'package:extended_masked_text/src/common/cursor_behavior.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -11,19 +12,6 @@ typedef BeforeChangeCallback = bool Function(String previous, String next);
 /// Just a way to ensure the callback always follows the same function,
 /// it is used by the [MaskedTextController]
 typedef AfterChangeCallback = void Function(String previous, String next);
-
-/// An enum representing the expected behavior to the cursor
-enum CursorBehaviour {
-  /// [unlocked] allows the user to freely change the cursor position
-  unlocked,
-
-  /// [start] is usefull in some languages or scenarios when we need a RTL
-  /// input
-  start,
-
-  /// [end] forces the input to be in LTR
-  end,
-}
 
 /// A [TextEditingController] extended to provide custom masks to flutter
 class MaskedTextController extends TextEditingController {
@@ -39,24 +27,24 @@ class MaskedTextController extends TextEditingController {
   /// The [mask] argument must follow the rules defined in the [translator].
   ///
   /// The [beforeChange] and [afterChange] callbacks are usefull to compare
-  /// changes in the text.
+  /// changes in the text, the first one defaults to a function returning true.
   ///
   /// The [cursorBehavior] parameter allows different behaviors for the cursor,
   /// we recommend the usage of the default behavior, the other ones have bugs
   /// that can be annoying in some cases.
   MaskedTextController({
     required this.mask,
-    this.beforeChange,
-    this.afterChange,
-    this.cursorBehavior = CursorBehaviour.unlocked,
+    this.cursorBehavior = CursorBehavior.end,
+    BeforeChangeCallback? beforeChange,
+    AfterChangeCallback? afterChange,
     String? text,
     Map<String, RegExp>? translator,
   }) : super(text: text) {
-    this.translator = translator ?? MaskedTextController.getDefaultTranslator();
+    _translator = translator ?? MaskedTextController.defaultTranslator;
 
-    // Initialize the beforeChange and afterChange callbacks if they are null
-    beforeChange ??= (previous, next) => true;
-    afterChange ??= (previous, next) {};
+    // Initialize the beforeChange and afterChange callbacks
+    this.beforeChange = beforeChange ?? (previous, next) => true;
+    this.afterChange = afterChange ?? (previous, next) {};
 
     addListener(_listener);
     _lastCursor = this.text.length;
@@ -66,22 +54,24 @@ class MaskedTextController extends TextEditingController {
   /// The current applied mask
   String mask;
 
+  late Map<String, RegExp> _translator;
+
   /// Translator from mask characters to [RegExp]
-  late Map<String, RegExp> translator;
+  Map<String, RegExp> get translator => _translator;
 
   /// A function called before the text is updated.
   /// Returns a boolean informing whether the text should be updated.
   ///
   /// Defaults to a function returning true
-  BeforeChangeCallback? beforeChange;
+  late BeforeChangeCallback beforeChange;
 
   /// A function called after the text is updated
   ///
   /// Defaults to an empty function
-  AfterChangeCallback? afterChange;
+  late AfterChangeCallback afterChange;
 
   /// Configure if the cursor should be forced
-  CursorBehaviour cursorBehavior;
+  final CursorBehavior cursorBehavior;
 
   /// Indicates what was the last text inputted by the user with mask
   String _lastUpdatedText = '';
@@ -104,12 +94,21 @@ class MaskedTextController extends TextEditingController {
   /// '0' represents a numeric character
   /// '@' represents a alphanumeric character
   /// '*' represents any character
-  static Map<String, RegExp> getDefaultTranslator() => {
+  static Map<String, RegExp> get defaultTranslator => {
         'A': RegExp(r'[A-Za-z]'),
         '0': RegExp(r'[0-9]'),
         '@': RegExp(r'[A-Za-z0-9]'),
         '*': RegExp(r'.*')
       };
+
+  /// Default [RegExp] for each character available for the mask
+  ///
+  /// 'A' represents a letter of the alphabet
+  /// '0' represents a numeric character
+  /// '@' represents a alphanumeric character
+  /// '*' represents any character
+  @Deprecated('Use [defaultTranslator instead]')
+  static Map<String, RegExp> get getDefaultTranslator => defaultTranslator;
 
   /// Corresponding to [TextEditingController.text]
   @override
@@ -120,47 +119,62 @@ class MaskedTextController extends TextEditingController {
   }
 
   /// Lock to prevent multiple calls, since it needs some shared variables
-  bool _lockProcess = false;
+  bool _isUpdatingMask = false;
 
   /// Check for user updates in the TextField
   void _listener() {
-    if (!_lockProcess) {
-      try {
-        _lockProcess = true;
+    // Ignore if the text is the same as before
+    if (text == _lastUpdatedText) {
+      return;
+    }
 
-        // only changing the text
-        if (text != _lastUpdatedText) {
-          final previous = _lastUpdatedText;
-          if (beforeChange!(previous, text)) {
-            updateText(text);
-            afterChange!(previous, text);
-          } else {
-            updateText(_lastUpdatedText);
-          }
-        }
+    // Ignore if the controller is already being updated
+    if (_isUpdatingMask) {
+      return;
+    }
 
-        // this is called in next iteration, after updateText is called
-        if (_cursorUpdatePending &&
-            selection.baseOffset != _cursorCalculatedPosition) {
-          _moveCursor(_cursorCalculatedPosition);
-          _cursorUpdatePending = false;
-        }
+    try {
+      _isUpdatingMask = true;
 
-        if (cursorBehavior != CursorBehaviour.unlocked) {
-          cursorBehavior == CursorBehaviour.start
-              ? _moveCursor(0, true)
-              : _moveCursor(_lastUpdatedText.length, true);
-        }
+      // only changing the text
+      _updateTextIfAllowed();
 
-        // only changing cursor position
-        if (_lastCursor != selection.baseOffset && selection.baseOffset > -1) {
-          _lastCursor = selection.baseOffset;
-        }
-      } finally {
-        _lockProcess = false;
+      // this is called in next iteration, after updateText is called
+      if (_cursorUpdatePending &&
+          selection.baseOffset != _cursorCalculatedPosition) {
+        _moveCursor(_cursorCalculatedPosition);
+        _cursorUpdatePending = false;
       }
+
+      _moveCursorIfCursorBehaviorIsNotUnlocked();
+
+      // only changing cursor position
+      if (_lastCursor != selection.baseOffset && selection.baseOffset > -1) {
+        _lastCursor = selection.baseOffset;
+      }
+    } finally {
+      _isUpdatingMask = false;
     }
   }
+
+  void _updateTextIfAllowed() {
+    final previous = _lastUpdatedText;
+    final shouldUpdate = beforeChange(previous, text);
+
+    // Keep the previous text
+    if (!shouldUpdate) {
+      return updateText(_lastUpdatedText);
+    }
+
+    // Update the text
+    updateText(text);
+    afterChange(previous, text);
+  }
+
+  void _moveCursorIfCursorBehaviorIsNotUnlocked() => switch (cursorBehavior) {
+        CursorBehavior.unlocked => null,
+        CursorBehavior.end => _moveCursor(_lastUpdatedText.length, true),
+      };
 
   /// Replaces [mask] with a [newMask] and moves cursor to the end if
   /// [shouldMoveCursorToEnd] is true
@@ -172,17 +186,20 @@ class MaskedTextController extends TextEditingController {
     bool shouldMoveCursorToEnd = true,
     bool shouldUpdateValue = false,
   }) {
-    if (mask != newMask) {
-      _previousMask = mask;
-      mask = newMask;
+    // If the mask hasn't changed, why update it?
+    if (mask == newMask) {
+      return;
+    }
 
-      if (shouldUpdateValue) {
-        updateText(text);
-      }
+    _previousMask = mask;
+    mask = newMask;
 
-      if (shouldMoveCursorToEnd) {
-        moveCursorToEnd();
-      }
+    if (shouldUpdateValue) {
+      updateText(text);
+    }
+
+    if (shouldMoveCursorToEnd) {
+      moveCursorToEnd();
     }
   }
 
@@ -223,12 +240,15 @@ class MaskedTextController extends TextEditingController {
 
   /// Moves cursor to specific position
   void _moveCursor(int index, [bool force = false]) {
-    // only moves the cursor if it is not defined or text is not selected
-    if (force || selection.baseOffset == selection.extentOffset) {
-      final value = min(max(index, 0), text.length);
-      selection = TextSelection.collapsed(offset: value);
-      _lastCursor = value;
+    // if the update isn't being forced and the text is selected do not move
+    // the cursor
+    if (!force && selection.baseOffset != selection.extentOffset) {
+      return;
     }
+
+    final value = min(max(index, 0), text.length);
+    selection = TextSelection.collapsed(offset: value);
+    _lastCursor = value;
   }
 
   /// Applies the [mask] to the [value]

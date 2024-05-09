@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:extended_masked_text/src/common/cursor_behavior.dart';
 import 'package:flutter/widgets.dart';
 
 /// A [TextEditingController] extended to apply masks to currency values
@@ -13,7 +16,7 @@ class MoneyMaskedTextController extends TextEditingController {
   /// The [rightSymbol] and [leftSymbol] are actually suffixes and prefixes and
   /// can have multiple characters
   ///
-  /// [precision] is used to controll the decimal cases
+  /// [precision] is used to control the number of fraction digits
   MoneyMaskedTextController({
     double? initialValue,
     this.decimalSeparator = ',',
@@ -21,27 +24,12 @@ class MoneyMaskedTextController extends TextEditingController {
     this.rightSymbol = '',
     this.leftSymbol = '',
     this.precision = 2,
+    this.cursorBehavior = CursorBehavior.end,
   }) {
     _validateConfig();
     _shouldApplyTheMask = true;
 
-    addListener(() {
-      if (_shouldApplyTheMask) {
-        var parts = _getOnlyNumbers(text).split('').toList(growable: true);
-
-        if (parts.isNotEmpty) {
-          // Ensures that the list of parts contains the minimum amount of
-          // characters to fit the precision
-          if (parts.length < precision + 1) {
-            parts = [...List.filled(precision, '0'), ...parts];
-          }
-
-          parts.insert(parts.length - precision, '.');
-          updateValue(double.parse(parts.join()));
-        }
-      }
-    });
-
+    addListener(_listener);
     updateValue(initialValue);
   }
 
@@ -69,6 +57,9 @@ class MoneyMaskedTextController extends TextEditingController {
   ///
   /// Defaults to 2
   final int precision;
+
+  /// Configure if the cursor should be forced
+  final CursorBehavior cursorBehavior;
 
   /// The last valid numeric value
   double? _lastValue;
@@ -114,21 +105,62 @@ class MoneyMaskedTextController extends TextEditingController {
   /// The current value as a [String] without the mask
   String get unmasked => _removeMask(text);
 
+  void _listener() {
+    _updateCursorIfNotUnlocked();
+
+    if (!_shouldApplyTheMask) {
+      return;
+    }
+
+    var parts = _getOnlyNumbers(text).split('').toList(growable: true);
+
+    if (parts.isNotEmpty) {
+      // Ensures that the list of parts contains the minimum amount of
+      // characters to fit the precision
+      if (parts.length < precision + 1) {
+        parts = [...List.filled(precision, '0'), ...parts];
+      }
+
+      parts.insert(parts.length - precision, '.');
+      updateValue(double.parse(parts.join()));
+    }
+  }
+
+  void _updateCursorIfNotUnlocked() => switch (cursorBehavior) {
+        CursorBehavior.unlocked => null,
+        CursorBehavior.end => _moveCursorToEnd(),
+      };
+
+  void _moveCursorToEnd() => _moveCursor(text.length - leftSymbol.length, true);
+
+  /// Moves cursor to specific position
+  void _moveCursor(int index, [bool force = false]) {
+    // if the update isn't being forced and the text is selected do not move
+    // the cursor
+    if (!force && selection.baseOffset != selection.extentOffset) {
+      return;
+    }
+
+    final value = min(max(index, 0), text.length);
+    selection = TextSelection.collapsed(offset: value);
+  }
+
   /// Updates the [TextEditingController] and ensures that the listener will
   /// not trigger the mask update
   void _updateText(String newText) {
-    if (text != newText) {
-      _shouldApplyTheMask = false;
-
-      final newSelection = _getNewSelection(newText);
-
-      value = TextEditingValue(
-        selection: newSelection,
-        text: newText,
-      );
-
-      _shouldApplyTheMask = true;
+    if (text == newText) {
+      return;
     }
+
+    _shouldApplyTheMask = false;
+    final newSelection = _getNewSelection(newText);
+
+    value = TextEditingValue(
+      selection: newSelection,
+      text: newText,
+    );
+
+    _shouldApplyTheMask = true;
   }
 
   /// Returns the updated selection with the new cursor position
@@ -147,57 +179,67 @@ class MoneyMaskedTextController extends TextEditingController {
       );
     }
 
-    // Cursor is not at the end of the text, so we need to calculate the updated
-    // position taking into the new masked text and the current position for the
-    // unmasked text
-    if (selection.baseOffset != text.length) {
-      try {
-        // We take the number of leading zeros taking into account the behavior
-        // when the text has only 4 characters
-        var numberOfLeadingZeros =
-            text.length - int.parse(text).toString().length;
-        if (numberOfLeadingZeros == 2 && text.length == 4) {
-          numberOfLeadingZeros = 1;
-        }
+    return switch (cursorBehavior) {
+      CursorBehavior.unlocked => _calculateNewCursorPosition(newText),
+      CursorBehavior.end => _setCursorAtEnd(newText),
+    };
+  }
 
-        // Then we get the substring containing the characters to be skipped so
-        // that we can position the cursor properly
-        final skippedString =
-            text.substring(numberOfLeadingZeros, selection.baseOffset);
-
-        // Positions the cursor right after going through all the characters
-        // that are in the skippedString
-        var cursorPosition = leftSymbol.length + 1;
-        if (skippedString != '') {
-          for (var i = leftSymbol.length, j = 0; i < newText.length; i++) {
-            if (newText[i] == skippedString[j]) {
-              j++;
-              cursorPosition = i + 1;
-            }
-
-            if (j == skippedString.length) {
-              cursorPosition = i + 1;
-              break;
-            }
-          }
-        }
-
-        return TextSelection.fromPosition(
-          TextPosition(offset: cursorPosition),
-        );
-      } catch (_) {
-        // If update fails, we set the cursor at end of the text
-        return TextSelection.fromPosition(
-          TextPosition(offset: newText.length - rightSymbol.length),
-        );
-      }
+  TextSelection _calculateNewCursorPosition(String newText) {
+    // Cursor is at end of the text
+    if (selection.baseOffset == text.length) {
+      return _setCursorAtEnd(newText);
     }
 
-    // Cursor is at end of the text
-    return TextSelection.fromPosition(
-      TextPosition(offset: newText.length - rightSymbol.length),
-    );
+    // Given that the cursor is not at the end of the text, then we need to
+    // calculate its new position using the new masked text and the current
+    // position for the unmasked text
+    try {
+      // We take the number of leading zeros taking into account the behavior
+      // when the text has only 4 characters
+      var numberOfLeadingZeros =
+          text.length - int.parse(text).toString().length;
+      if (numberOfLeadingZeros == 2 && text.length == 4) {
+        numberOfLeadingZeros = 1;
+      }
+
+      // Then we get the substring containing the characters to be skipped so
+      // that we can position the cursor properly
+      final skippedString = text.substring(
+        numberOfLeadingZeros,
+        selection.baseOffset,
+      );
+
+      // Positions the cursor right after going through all the characters
+      // that are in the skippedString
+      var cursorPosition = leftSymbol.length + 1;
+      if (skippedString != '') {
+        for (var i = leftSymbol.length, j = 0; i < newText.length; i++) {
+          if (newText[i] == skippedString[j]) {
+            j++;
+            cursorPosition = i + 1;
+          }
+
+          if (j == skippedString.length) {
+            cursorPosition = i + 1;
+            break;
+          }
+        }
+      }
+
+      return TextSelection.fromPosition(
+        TextPosition(offset: cursorPosition),
+      );
+    } catch (_) {
+      // If the update fails, we set the cursor at end of the text
+      // TODO(LeandroNovak): Debug to find a solution for this scenario
+      return _setCursorAtEnd(newText);
+    }
   }
+
+  TextSelection _setCursorAtEnd(String newText) => TextSelection.fromPosition(
+        TextPosition(offset: newText.length - rightSymbol.length),
+      );
 
   /// Ensures [rightSymbol] does not contains numbers
   void _validateConfig() {
