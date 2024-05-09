@@ -4,17 +4,46 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+/// Just a way to ensure the callback always follows the same function,
+/// it is used by the [MaskedTextController]
 typedef BeforeChangeCallback = bool Function(String previous, String next);
+
+/// Just a way to ensure the callback always follows the same function,
+/// it is used by the [MaskedTextController]
 typedef AfterChangeCallback = void Function(String previous, String next);
 
+/// An enum representing the expected behavior to the cursor
 enum CursorBehaviour {
+  /// [unlocked] allows the user to freely change the cursor position
   unlocked,
+
+  /// [start] is usefull in some languages or scenarios when we need a RTL
+  /// input
   start,
+
+  /// [end] forces the input to be in LTR
   end,
 }
 
 /// A [TextEditingController] extended to provide custom masks to flutter
 class MaskedTextController extends TextEditingController {
+  /// Creates a controller for an editable text field.
+  ///
+  /// This constructor treats a null [text] argument as if it were the empty
+  /// string.
+  ///
+  /// The [translator] is nullable and provides a way to customize the way the
+  /// controller applies the mask, usefull when the expected input has a
+  /// character from the mask.
+  ///
+  /// The [mask] argument must follow the rules defined in the [translator].
+  ///
+  /// The [beforeChange] and [afterChange] callbacks are usefull to compare
+  /// changes in the text.
+  ///
+  /// The [cursorBehavior] parameter allows different behaviors for the cursor,
+  /// we recommend the usage of the default behavior, the other ones have bugs
+  /// that can be annoying in some cases.
   MaskedTextController({
     required this.mask,
     this.beforeChange,

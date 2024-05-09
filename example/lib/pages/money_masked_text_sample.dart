@@ -8,6 +8,8 @@ class MoneyMaskedTextSample extends StatelessWidget {
     leftSymbol: 'R\$ ',
   );
 
+  MoneyMaskedTextSample({super.key});
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(

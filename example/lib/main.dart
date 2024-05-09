@@ -4,10 +4,12 @@ import 'package:example/pages/money_masked_text_sample.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'Masked Text Demo',
@@ -20,14 +22,15 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final String title;
   const MyHomePage({
     required this.title,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
+
+  final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -43,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ElevatedButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => MaskedTextSample(),
+                    builder: (context) => const MaskedTextSample(),
                   ),
                 ),
                 child: const Text('Masked Controller'),

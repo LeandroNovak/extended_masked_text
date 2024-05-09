@@ -2,6 +2,18 @@ import 'package:flutter/widgets.dart';
 
 /// A [TextEditingController] extended to apply masks to currency values
 class MoneyMaskedTextController extends TextEditingController {
+  /// Creates a controller for an editable text field for currencies
+  ///
+  /// This constructor treats a null [initialValue] argument as if it were the
+  /// empty
+  ///
+  /// The [decimalSeparator] and [thousandSeparator] are useful to ensure the
+  /// formatted number follows the desired localization.
+  ///
+  /// The [rightSymbol] and [leftSymbol] are actually suffixes and prefixes and
+  /// can have multiple characters
+  ///
+  /// [precision] is used to controll the decimal cases
   MoneyMaskedTextController({
     double? initialValue,
     this.decimalSeparator = ',',
@@ -99,6 +111,7 @@ class MoneyMaskedTextController extends TextEditingController {
     _updateText(masked);
   }
 
+  /// The current value as a [String] without the mask
   String get unmasked => _removeMask(text);
 
   /// Updates the [TextEditingController] and ensures that the listener will
@@ -204,6 +217,7 @@ class MoneyMaskedTextController extends TextEditingController {
         .reversed
         .toList(growable: true);
 
+    // ignore: cascade_invocations
     textRepresentation.insert(precision, decimalSeparator);
 
     for (var i = precision + 4; textRepresentation.length > i; i += 4) {

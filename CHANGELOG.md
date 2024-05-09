@@ -2,6 +2,7 @@
 
 * Adds a getter to unmasked text for MoneyMaskedTextController
 * Update lint rules (also remove deprecated ones)
+* Update code documentation and fix lint issues
 
 ## 2.3.1
 

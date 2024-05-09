@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 
 /// Sample of the MoneyMaskedTextController
 class MaskedTextSample extends StatefulWidget {
+  const MaskedTextSample({super.key});
+
   @override
-  _MaskedTextSampleState createState() => _MaskedTextSampleState();
+  State<MaskedTextSample> createState() => _MaskedTextSampleState();
 }
 
 class _MaskedTextSampleState extends State<MaskedTextSample> {
