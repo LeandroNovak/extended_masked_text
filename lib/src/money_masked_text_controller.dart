@@ -131,7 +131,7 @@ class MoneyMaskedTextController extends TextEditingController {
         CursorBehavior.end => _moveCursorToEnd(),
       };
 
-  void _moveCursorToEnd() => _moveCursor(text.length - leftSymbol.length, true);
+  void _moveCursorToEnd() => _moveCursor(text.length - rightSymbol.length, true);
 
   /// Moves cursor to specific position
   void _moveCursor(int index, [bool force = false]) {
