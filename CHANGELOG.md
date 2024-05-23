@@ -1,3 +1,6 @@
+## 3.0.1
+* Fix bug where cursor position calculation uses the wrong symbol
+
 ## 3.0.0
 
 * **BREAKING:** Remove CursorBehaviour.start
