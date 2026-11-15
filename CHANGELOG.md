@@ -1,3 +1,11 @@
+## 4.0.0
+
+* Require Flutter 3.47.0 and Dart 3.13.0 or later.
+* Migrate the example to the standalone `material_ui` package.
+* Update compatible dependencies and Flutter lint rules.
+* Update Android tooling, Apple deployment targets, web startup, and CI.
+* Preserve cursor behavior when only the text selection changes.
+
 ## 3.0.1
 * Fix bug where cursor position calculation uses the wrong symbol
 

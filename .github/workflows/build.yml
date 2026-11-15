@@ -3,17 +3,27 @@ name: build
 on:
   push:
     branches: [ main ]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.19.0
+          flutter-version: '3.47.9'
+          channel: stable
       - run: flutter pub get
       - run: flutter test
       - run: flutter analyze
+      - run: flutter pub get
+        working-directory: example
+      - run: flutter analyze
+        working-directory: example
+      - run: flutter test
+        working-directory: example
+      - run: flutter build web --release
+        working-directory: example
