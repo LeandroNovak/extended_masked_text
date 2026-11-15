@@ -1,7 +1,7 @@
 // ignore_for_file: cascade_invocations
 
 import 'package:extended_masked_text/extended_masked_text.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -84,6 +84,7 @@ void main() {
       final cpfController = MaskedTextController(
         text: '12345678901',
         mask: '000.000.000-00',
+        cursorBehavior: CursorBehavior.unlocked,
       );
 
       expect(cpfController.text, '123.456.789-01');

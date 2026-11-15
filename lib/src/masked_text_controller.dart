@@ -123,11 +123,6 @@ class MaskedTextController extends TextEditingController {
 
   /// Check for user updates in the TextField
   void _listener() {
-    // Ignore if the text is the same as before
-    if (text == _lastUpdatedText) {
-      return;
-    }
-
     // Ignore if the controller is already being updated
     if (_isUpdatingMask) {
       return;
@@ -136,14 +131,15 @@ class MaskedTextController extends TextEditingController {
     try {
       _isUpdatingMask = true;
 
-      // only changing the text
-      _updateTextIfAllowed();
+      if (text != _lastUpdatedText) {
+        _updateTextIfAllowed();
 
-      // this is called in next iteration, after updateText is called
-      if (_cursorUpdatePending &&
-          selection.baseOffset != _cursorCalculatedPosition) {
-        _moveCursor(_cursorCalculatedPosition);
-        _cursorUpdatePending = false;
+        // Apply the cursor calculated by updateText.
+        if (_cursorUpdatePending &&
+            selection.baseOffset != _cursorCalculatedPosition) {
+          _moveCursor(_cursorCalculatedPosition);
+          _cursorUpdatePending = false;
+        }
       }
 
       _moveCursorIfCursorBehaviorIsNotUnlocked();
